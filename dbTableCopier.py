@@ -30,10 +30,11 @@ def insertRows(tableName, db, rows):
         try:
             query = "INSERT INTO %s values(%s)" % (tableName, vals)
             cur.execute(query)
-            db.commit()
         except Exception, e:
             print str(e)
             sys.exit()
+
+    db.commit()
 
 
 def getRows(tableName, db):

@@ -32,7 +32,6 @@ if len(sourceRows) != len(destinationRows):
 else:
     for (rowS, rowD) in zip(sourceRows, destinationRows):
         for (itemS, itemD) in zip(rowS, rowD):
-            print str(itemS) + ' ' + str(itemD)
             if itemS != itemD:
                 result = False
                 print 'ERROR: ' + str(itemS) + ' not equal ' + str(itemD)
