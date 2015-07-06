@@ -69,8 +69,6 @@ def getParams(argv):
 def main():
     prms = getParams(sys.argv)
 
-    print prms
-
     sourceDb = MySQLdb.connect(host=prms['ipAddress1'], user=prms['user1'],
                                passwd=prms['passwd1'], db=prms['dbName1'])
     destinationDb = MySQLdb.connect(host=prms['ipAddress2'], user=prms['user2'],
