@@ -26,19 +26,17 @@ def toStr(row):
 def insertRows(tableName, db, rows):
     cur = db.cursor()
 
-    query = "INSERT INTO %s values " % tableName
     for row in rows:
         vals = toStr(row)
-        query += "(%s), " % vals
+        query = "INSERT INTO %s values(%s)" % (tableName, vals)
 
-    query = query[:-2]
+        try:
+            cur.execute(query)
+        except Exception, e:
+            print str(e)
+            sys.exit()
 
-    try:
-        cur.execute(query)
-        db.commit()
-    except Exception, e:
-        print str(e)
-        sys.exit()
+    db.commit()
 
 
 def getRows(tableName, db):
