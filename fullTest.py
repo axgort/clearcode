@@ -21,8 +21,11 @@ destinationDb = MySQLdb.connect(host=DESTINATION_DB_IP,
                                 passwd=DESTINATION_DB_PASSWD,
                                 db=DESTINATION_DB_NAME)
 
-sourceRows = getRows('titles', sourceDb)
-destinationRows = getRows('titles', destinationDb)
+sourceCursor = getRows('titles', sourceDb)
+destinationCursor = getRows('titles', destinationDb)
+
+sourceRows = sourceCursor.fetchall()
+destinationRows = destinationCursor.fetchall()
 
 result = True
 

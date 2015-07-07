@@ -5,6 +5,7 @@ import datetime
 TYPE_STR = type('str')
 TYPE_DATETIME = type(datetime.date(2000, 1, 1))
 TYPE_NONE = type(None)
+SIZE = 100000
 
 
 def toStr(row):
@@ -25,30 +26,36 @@ def toStr(row):
 def insertRows(tableName, db, rows):
     cur = db.cursor()
 
+    query = "INSERT INTO %s values " % tableName
     for row in rows:
         vals = toStr(row)
-        try:
-            query = "INSERT INTO %s values(%s)" % (tableName, vals)
-            cur.execute(query)
-        except Exception, e:
-            print str(e)
-            sys.exit()
+        query += "(%s), " % vals
 
-    db.commit()
+    query = query[:-2]
+
+    try:
+        cur.execute(query)
+        db.commit()
+    except Exception, e:
+        print str(e)
+        sys.exit()
 
 
 def getRows(tableName, db):
     cur = db.cursor()
     query = "SELECT * FROM %s;" % tableName
     cur.execute(query)
-    rows = cur.fetchall()
 
-    return rows
+    return cur
 
 
 def copyTable(tableName, sourceDb, destinationDb):
-    rows = getRows(tableName, sourceDb)
-    insertRows(tableName, destinationDb, rows)
+    cursor = getRows(tableName, sourceDb)
+
+    rows = cursor.fetchmany(size=SIZE)
+    while len(rows) > 0:
+        insertRows(tableName, destinationDb, rows)
+        rows = cursor.fetchmany(size=SIZE)
 
 
 def getParams(argv):
