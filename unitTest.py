@@ -4,8 +4,15 @@ from dbTableCopier import copyTable
 
 
 class DbStub(object):
+    def __init__(self):
+        self.cursorWasCalled = 0
+
     def cursor(self):
-        self.cur = CursorStub()
+        if self.cursorWasCalled == 0:
+            self.cursorWasCalled = 1
+            self.cur = CursorStub1()
+        else:
+            self.cur = CursorStub2()
         return self.cur
 
     def close(self):
@@ -15,7 +22,7 @@ class DbStub(object):
         pass
 
 
-class CursorStub(object):
+class CursorStub1(object):
     def __init__(self):
         self.inserts = []
         self.selectWasCalled = 0
@@ -28,7 +35,7 @@ class CursorStub(object):
         if query[:6] == 'INSERT':
             self.inserts.append(query)
 
-    def fetchmany(self, size):
+    def fetchall(self):
         if self.selectWasCalled:
             rows = []
             if self.fetchWasCalled == 0:
@@ -43,6 +50,14 @@ class CursorStub(object):
             return rows
 
 
+class CursorStub2(object):
+    def execute(self, query):
+        pass
+
+    def fetchall(self):
+        return []
+
+
 class TestDbTableCopier(unittest.TestCase):
     def setUp(self):
         self.sourceDb = DbStub()
@@ -51,9 +66,9 @@ class TestDbTableCopier(unittest.TestCase):
     def test_copyTable(self):
         copyTable('titles', self.sourceDb, self.destinationDb)
 
-        insert = 'INSERT INTO titles values ' + \
-            '(10001,"Senior Engineer","1986-06-26","9999-01-01"), ' + \
-            '(10002,"Staff","1996-08-03","9999-01-01"), ' + \
+        insert = 'INSERT INTO titles values' + \
+            '(10001,"Senior Engineer","1986-06-26","9999-01-01"),' + \
+            '(10002,"Staff","1996-08-03","9999-01-01"),' + \
             '(10004,"Engineer","1986-12-01","1995-12-01")'
 
         self.assertEqual(self.destinationDb.cur.inserts[0], insert)

@@ -23,39 +23,43 @@ def toStr(row):
     return ','.join(res)
 
 
-def insertRows(tableName, db, rows):
+def insertRows(db, tableName, rows):
     cur = db.cursor()
 
-    query = "INSERT INTO %s values " % tableName
+    query = "INSERT INTO %s values" % tableName
+
     for row in rows:
         vals = toStr(row)
-        query += "(%s), " % vals
+        query += "(%s)," % vals
 
-    query = query[:-2]  # Remove unnecessary ', ' on the end of query
+    query = query[:-1]  # Remove "," from the end of query
 
     try:
         cur.execute(query)
-        db.commit()
     except Exception, e:
         print str(e)
         sys.exit()
 
+    db.commit()
 
-def getRows(tableName, db):
+
+def getRows(db, tableName, start, len):
     cur = db.cursor()
-    query = "SELECT * FROM %s;" % tableName
+    query = "SELECT * FROM %s LIMIT %d,%d;" % (tableName, start, len)
     cur.execute(query)
+    rows = cur.fetchall()
 
-    return cur
+    return rows
 
 
 def copyTable(tableName, sourceDb, destinationDb):
-    cursor = getRows(tableName, sourceDb)
+    begin = 0
+    rows = getRows(sourceDb, tableName, begin, SIZE)
 
-    rows = cursor.fetchmany(size=SIZE)
     while len(rows) > 0:
-        insertRows(tableName, destinationDb, rows)
-        rows = cursor.fetchmany(size=SIZE)
+        insertRows(destinationDb, tableName, rows)
+        begin += SIZE
+        rows = getRows(sourceDb, tableName, begin, SIZE)
 
 
 def getParams(argv):
