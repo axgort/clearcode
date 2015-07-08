@@ -17,7 +17,7 @@ def toStr(row):
             res.append('"'+item+'"')
         elif type(item) == TYPE_DATETIME:
             res.append('"'+str(item)+'"')
-        else:
+        else:  # for numeric values
             res.append(str(item))
 
     return ','.join(res)
@@ -31,7 +31,7 @@ def insertRows(tableName, db, rows):
         vals = toStr(row)
         query += "(%s), " % vals
 
-    query = query[:-2]
+    query = query[:-2]  # Remove unnecessary ', ' on the end of query
 
     try:
         cur.execute(query)
