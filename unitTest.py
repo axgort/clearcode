@@ -4,8 +4,15 @@ from dbTableCopier import copyTable
 
 
 class DbStub(object):
+    def __init__(self):
+        self.cursorWasCalled = 0
+
     def cursor(self):
-        self.cur = CursorStub()
+        if self.cursorWasCalled == 0:
+            self.cursorWasCalled = 1
+            self.cur = CursorStub1()
+        else:
+            self.cur = CursorStub2()
         return self.cur
 
     def close(self):
@@ -15,7 +22,7 @@ class DbStub(object):
         pass
 
 
-class CursorStub(object):
+class CursorStub1(object):
     def __init__(self):
         self.inserts = []
         self.selectWasCalled = 0
@@ -28,7 +35,7 @@ class CursorStub(object):
         if query[:6] == 'INSERT':
             self.inserts.append(query)
 
-    def fetchmany(self, size):
+    def fetchall(self):
         if self.selectWasCalled:
             rows = []
             if self.fetchWasCalled == 0:
@@ -41,6 +48,14 @@ class CursorStub(object):
                     (10004L, 'Engineer',
                         datetime.date(1986, 12, 1), datetime.date(1995, 12, 1))]
             return rows
+
+
+class CursorStub2(object):
+    def execute(self, query):
+        pass
+
+    def fetchall(self):
+        return []
 
 
 class TestDbTableCopier(unittest.TestCase):

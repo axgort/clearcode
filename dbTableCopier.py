@@ -23,7 +23,7 @@ def toStr(row):
     return ','.join(res)
 
 
-def insertRows(tableName, db, rows):
+def insertRows(db, tableName, rows):
     cur = db.cursor()
 
     for row in rows:
@@ -39,21 +39,23 @@ def insertRows(tableName, db, rows):
     db.commit()
 
 
-def getRows(tableName, db):
+def getRows(db, tableName, start, len):
     cur = db.cursor()
-    query = "SELECT * FROM %s;" % tableName
+    query = "SELECT * FROM %s LIMIT %d,%d;" % (tableName, start, len)
     cur.execute(query)
+    rows = cur.fetchall()
 
-    return cur
+    return rows
 
 
 def copyTable(tableName, sourceDb, destinationDb):
-    cursor = getRows(tableName, sourceDb)
+    begin = 0
+    rows = getRows(sourceDb, tableName, begin, SIZE)
 
-    rows = cursor.fetchmany(size=SIZE)
     while len(rows) > 0:
-        insertRows(tableName, destinationDb, rows)
-        rows = cursor.fetchmany(size=SIZE)
+        insertRows(destinationDb, tableName, rows)
+        begin += SIZE
+        rows = getRows(sourceDb, tableName, begin, SIZE)
 
 
 def getParams(argv):

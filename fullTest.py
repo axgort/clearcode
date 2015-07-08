@@ -1,5 +1,4 @@
 import MySQLdb
-from dbTableCopier import getRows
 
 TABLENAME = 'titles'
 SOURCE_DB_IP = 'localhost'
@@ -21,11 +20,17 @@ destinationDb = MySQLdb.connect(host=DESTINATION_DB_IP,
                                 passwd=DESTINATION_DB_PASSWD,
                                 db=DESTINATION_DB_NAME)
 
-sourceCursor = getRows('titles', sourceDb)
-destinationCursor = getRows('titles', destinationDb)
 
-sourceRows = sourceCursor.fetchall()
-destinationRows = destinationCursor.fetchall()
+query = "SELECT * FROM %s;" % (TABLENAME)
+
+cur = sourceDb.cursor()
+cur.execute(query)
+sourceRows = cur.fetchall()
+
+cur = destinationDb.cursor()
+cur.execute(query)
+destinationRows = cur.fetchall()
+
 
 result = True
 
