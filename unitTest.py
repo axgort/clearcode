@@ -66,16 +66,12 @@ class TestDbTableCopier(unittest.TestCase):
     def test_copyTable(self):
         copyTable('titles', self.sourceDb, self.destinationDb)
 
-        inserts = ['INSERT INTO titles values(10001,"Senior Engineer",\
-"1986-06-26","9999-01-01")',
-                   'INSERT INTO titles values(10002,"Staff",\
-"1996-08-03","9999-01-01")',
-                   'INSERT INTO titles values(10004,"Engineer",\
-"1986-12-01","1995-12-01")']
+        insert = 'INSERT INTO titles values' + \
+            '(10001,"Senior Engineer","1986-06-26","9999-01-01"),' + \
+            '(10002,"Staff","1996-08-03","9999-01-01"),' + \
+            '(10004,"Engineer","1986-12-01","1995-12-01")'
 
-        self.assertEqual(self.destinationDb.cur.inserts[0], inserts[0])
-        self.assertEqual(self.destinationDb.cur.inserts[1], inserts[1])
-        self.assertEqual(self.destinationDb.cur.inserts[2], inserts[2])
+        self.assertEqual(self.destinationDb.cur.inserts[0], insert)
 
 
 if __name__ == '__main__':
