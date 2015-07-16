@@ -5,7 +5,43 @@ import datetime
 TYPE_STR = type('str')
 TYPE_DATETIME = type(datetime.date(2000, 1, 1))
 TYPE_NONE = type(None)
-SIZE = 100000
+SELECT_SIZE = 8192
+FETCH_SIZE = 4092
+
+
+class TableSelector(object):
+    def __init__(self, tableName, db, selectSize, fetchSize):
+        self.db = db
+        self.tableName = tableName
+        self.selectSize = selectSize
+        self.fetchSize = fetchSize
+        self.cursor = None
+        self.selectPositon = 0
+
+    def select(self, selectSize):
+        if self.cursor is None:
+            self.cursor = self.db.cursor()
+
+        queryData = (self.tableName, self.selectPositon, selectSize)
+        query = "SELECT * FROM %s LIMIT %d,%d;" % queryData
+        self.cursor.execute(query)
+        self.selectPositon += selectSize
+
+        return self.cursor
+
+    def getRowsGenerator(self):
+        cursor = self.select(self.selectSize)
+        rows = cursor.fetchmany(self.fetchSize)
+
+        while len(rows) > 0:
+            yield rows
+            rows = self.cursor.fetchmany(self.fetchSize)
+
+            if len(rows) <= 0:
+                cursor = self.select(self.selectSize)
+                rows = cursor.fetchmany(self.fetchSize)
+
+        yield None
 
 
 def toStr(row):
@@ -53,13 +89,13 @@ def getRows(db, tableName, start, len):
 
 
 def copyTable(tableName, sourceDb, destinationDb):
-    begin = 0
-    rows = getRows(sourceDb, tableName, begin, SIZE)
+    tableSelector = TableSelector(tableName, sourceDb, SELECT_SIZE, FETCH_SIZE)
+    rowsGenerator = tableSelector.getRowsGenerator()
 
-    while len(rows) > 0:
+    rows = rowsGenerator.next()
+    while rows is not None:
         insertRows(destinationDb, tableName, rows)
-        begin += SIZE
-        rows = getRows(sourceDb, tableName, begin, SIZE)
+        rows = rowsGenerator.next()
 
 
 def getParams(argv):
